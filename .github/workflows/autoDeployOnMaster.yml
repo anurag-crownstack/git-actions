@@ -1,9 +1,9 @@
-name: Auto deployment to Production for master branch
+name: Auto deployment to Production for main branch
 
 on:
   push:
     branches:
-      - master
+      - main
 
 jobs:
   deploy:
@@ -13,7 +13,7 @@ jobs:
       - name: Checkout repository
         uses: actions/checkout@v2
 
-      - name: Deploy `master` code on production
+      - name: Deploy `main` code on production
         env:
           SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
           SERVER: ${{ vars.SERVER }}
@@ -24,7 +24,7 @@ jobs:
           echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
           ssh -o StrictHostKeyChecking=no $USERNAME@$SERVER "
             cd $REMOTE_PATH &&
-            git pull origin master &&
+            git pull origin main &&
             composer install --no-interaction --prefer-dist --optimize-autoloader &&
             php artisan migrate --force
           "
