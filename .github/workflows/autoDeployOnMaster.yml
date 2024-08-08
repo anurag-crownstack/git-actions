@@ -1,0 +1,30 @@
+name: Auto deployment to Production for master branch
+
+on:
+  push:
+    branches:
+      - master
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+
+    steps:
+      - name: Checkout repository
+        uses: actions/checkout@v2
+
+      - name: Deploy `master` code on production
+        env:
+          SSH_PRIVATE_KEY: ${{ secrets.SSH_PRIVATE_KEY }}
+          SERVER: ${{ vars.SERVER }}
+          USERNAME: ${{ vars.USERNAME }}
+          REMOTE_PATH: ${{ vars.REMOTE_PATH }}
+        run: |
+          eval "$(ssh-agent -s)"
+          echo "$SSH_PRIVATE_KEY" | tr -d '\r' | ssh-add -
+          ssh -o StrictHostKeyChecking=no $USERNAME@$SERVER "
+            cd $REMOTE_PATH &&
+            git pull origin master &&
+            composer install --no-interaction --prefer-dist --optimize-autoloader &&
+            php artisan migrate --force
+          "
